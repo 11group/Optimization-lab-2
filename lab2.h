@@ -1,3 +1,4 @@
+#pragma once
 ////////////////////////////////////////////
 ////////////////////////////////////////////
 ////	Три метода поиска минимума	////////
@@ -17,6 +18,8 @@
 #include <conio.h>
 #include <vector>
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 
 namespace optimization
 {
@@ -25,7 +28,7 @@ namespace optimization
 		double x1, x2, f1, f2;
 		double a = 0., b = 1.;
 		double eps = 1E-6;
-		int AmountDih=0;
+		int AmountDih = 0;
 	public:
 		Dihotomia() {};
 		~Dihotomia() {};
@@ -54,8 +57,8 @@ namespace optimization
 		double eps = 1E-6;
 		int AmountFib = 0;
 	public:
-		Fibonacci(){};
-		~Fibonacci(){};
+		Fibonacci() {};
+		~Fibonacci() {};
 		double func(double x);
 		void Fib();
 	};
@@ -81,7 +84,7 @@ namespace optimization
 		int AmountHuckJivs = 0;
 		double func(double x);
 		bool flag = 0, flag2 = 1;
-		void SurroundingArea(double x0);
+		void SurroundingArea(double *x0);
 
 	public:
 		HuckJivs() {};
@@ -89,7 +92,33 @@ namespace optimization
 		void HuckJivsRun();
 	};
 
+	class FletcherRivs
+	{
+	protected:
+		double x1, x2, x0, f1, f2, f0;
+		double eps = 1e-3;
+		int AmountFletcherRivs = 0;
+		double func(double x);
+		
+	public:
+		FletcherRivs() {};
+		~FletcherRivs() {};
+		void FletcherRivsRun();
+	};
+
+	class SteepestDescent
+	{
+	protected:
+		double x1, x2, x0, f1, f2, f0;
+		double eps = 1e-3;
+		int AmountSteepestDescent = 0;
+		double func(double x);
+
+	public:
+		SteepestDescent() {};
+		~SteepestDescent() {};
+		void SteepestDescentRun();
+	
+	};
 
 }
-
-
