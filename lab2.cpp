@@ -1,7 +1,7 @@
 #include "lib.h"
 namespace optimization
 {
-	
+
 	///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////
 	//////////////			Дихотомия			///////////
@@ -46,7 +46,7 @@ namespace optimization
 		fprintf(out, "Минимум = %.15f\nФункция = %.15f\nКоличество вычисления функции: %d", min, a, AmountDih);
 		fclose(out);
 	}
-	
+
 	///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////
 	//////////////		Золотое сечение			///////////
@@ -128,20 +128,20 @@ namespace optimization
 		F.push_back(1);
 		fprintf(out, "Номер итерации |	   a	 |		 b		  |		 b-a	  |	 Отношение\n");
 		fprintf(out, "%15d %.15f  %.15f  %.15f  %.15f\n", i, a, b, (b - a), razn);
-		
+
 		//Найдем F(n+2), F(n) и F(n+1) 
 		for (; ((b - a) / eps) > Fn; n++)
 		{
-			Fn = F[n-2] + F[n-1];
+			Fn = F[n - 2] + F[n - 1];
 			F.push_back(Fn);
-		} 
+		}
 		n = n - 3;
 
 		x1 = a + (F[n] / F[n + 2])*(b - a);
 		x2 = a + (F[n + 1] / F[n + 2])*(b - a);
 		f1 = func(x1);
 		f2 = func(x2);
-		
+
 		//Ищем минимум 
 		for (i = 1; i<n; i++)
 		{
@@ -193,7 +193,7 @@ namespace optimization
 		FILE *out = fopen("outputAlg.txt", "w");
 		std::cout << "Введите начальную точку: ";
 		std::cin >> x0;
-		
+
 		//Находим направление движения
 		f1 = func(x0);
 		f2 = func(x0 + eps);
@@ -248,29 +248,30 @@ namespace optimization
 		return x*x;
 	}
 
-	 void HuckJivs::SurroundingArea(double x0)
+	void HuckJivs::SurroundingArea(double *x0)
 	{
 		// найдем направление движения
-		while (flag = 0 && eps> 1e-15)
+		while (flag == 0 && eps> 1e-15)
 		{
-			f0 = func(x0);
-			f2 = func(x0 + eps);
+			f0 = func(*x0);
+			f2 = func(*x0 + eps);
 
 			if (f0 < f2)
 			{
-				f1 = func(x0 - eps);
+				f1 = func(*x0 - eps);
 				if (f0 < f1)
 					eps *= 0.1;
 				else
 				{
-					x0 -= eps;
+					*x0 -= eps;
 					f0 = f1;
 					flag = 1;
+					eps = -eps;
 				}
 			}
 			else
 			{
-				x0 += eps;
+				*x0 += eps;
 				f0 = f2;
 				flag = 1;
 			}
@@ -281,14 +282,21 @@ namespace optimization
 	{
 		int i;
 		setlocale(LC_ALL, "Russian");
-		FILE *out = fopen("outputAlg.txt", "w");
+		//FILE *out = fopen("outputHuck&Jivs.txt", "w");
+		std::ofstream out;
+		out.open("outputHuck&Jivs.txt");
 		std::cout << "Введите начальную точку: ";
 		std::cin >> x0;
 
 		std::cout << "\n" << "Точка отправления   " << "Значение функции\n";
+		std::cout << std::setprecision(15) << x0 << "               " ;
+		out << "\n" << "Точка отправления   " << "Значение функции\n"
+		<< std::setprecision(15) << x0 << "               ";
 
 		// найдем направление движения
-		SurroundingArea(x0);
+		SurroundingArea(&x0);
+		std::cout << std::setprecision(15) << f0 << "\n";
+		out << std::setprecision(15) << f0 << "\n";
 
 		// поиск по образцу
 		if (flag)
@@ -296,21 +304,49 @@ namespace optimization
 			f1 = func(x0 + eps);
 			for (i = 1; flag2 == 1; i++)
 			{
-				f2 = func(x0 + (i+1)*eps);
+				f2 = func(x0 + (i + 1)*eps);
 				if (f2 > f1)
 					flag2 = 0;
 				else f1 = f2;
 			}
 			x0 += i*eps;
 
-			std::cout << x0 << f1 << "\n";
-
-			SurroundingArea(x0);
+			SurroundingArea(&x0);
 		}
 
-		std::cout << "\nТочка минимума: " << x0 << "\nЗначение функции: " << f1 << "\nКоличество вычислений функции: " << AmountHuckJivs;
+		std::cout << "\nТочка минимума: " << std::setprecision(15) << x0 << "\nЗначение функции: " << std::setprecision(15) << f1 << "\nКоличество вычислений функции: " << AmountHuckJivs;
+		out << "\nТочка минимума: " << std::setprecision(15) << x0 << "\nЗначение функции: " << std::setprecision(15) << f1 << "\nКоличество вычислений функции: " << AmountHuckJivs;
+	}
 
+	///////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////
+	//////////////		Метод Флетчера-Ривза	///////////
+	///////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////
 
+	double FletcherRivs::func(double x)
+	{
+		AmountFletcherRivs++;
+		return x*x;
+	}
+
+	void FletcherRivs::FletcherRivsRun()
+	{
+	}
+
+	///////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////
+	//////////////	Метод наискорейшего спуска	///////////
+	///////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////
+
+	double SteepestDescent::func(double x)
+	{
+		AmountSteepestDescent++;
+		return x*x;
+	}
+
+	void SteepestDescent::SteepestDescentRun()
+	{
 	}
 }
-
