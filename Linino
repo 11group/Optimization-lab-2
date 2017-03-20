@@ -1,0 +1,215 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <math.h>
+
+using namespace std;
+
+static const double eps = 1e-9;
+static const double y_0 = 5;	
+static const double x_0 = 5;	
+static int actions = 0;
+
+class vect
+{
+private:
+	double x[2];
+public:
+	inline vect()
+	{
+		x[0] = x[1] = 0.0;
+	}
+	inline vect(double z, double y)
+	{
+		x[0] = z;
+		x[1] = y;
+	}
+	inline double norm()
+	{
+		return sqrt(x[0] * x[0] + x[1] * x[1]);
+	}
+	inline double& operator [] (unsigned i)
+	{
+		return x[i];
+	}
+	inline vect operator + (vect y)
+	{
+		return vect(x[0] + y[0], x[1] + y[1]);
+	}
+	inline vect operator - (vect y)
+	{
+		return vect(x[0] - y[0], x[1] - y[1]);
+	}
+	inline vect operator * (double c)
+	{
+		return vect(x[0] * c, x[1] * c);
+	}
+	inline double mult(vect y)
+	{
+		return x[0] * y[0] + x[1] * y[1];
+	}
+	friend ostream& operator << (ostream& ostream_, const vect& v)
+	{
+		ostream_.setf(ios::scientific);
+		ostream_.precision(16);
+		ostream_ << "[ " << v.x[0] << ", " << v.x[1] << " ]";
+		return ostream_;
+	}
+};
+
+inline double func(class vect x)
+{
+	actions++;
+    //return 100.0 * (x[1]-x[0]*x[0]) * (x[1]-x[0]*x[0]) + (1.0-x[0]) * (1.0-x[0]);
+	//return x[0] * x[0] + 3.0 * x[0] * x[1] + 3.0 * x[1] * x[1];
+	return (x[0] - 1)*(x[0] - 1) + (x[1] - 2)*(x[1] - 2);
+	//return -(1.0 / (1.0 + (x[0] - 4.0)*(x[0] - 4.0) + (x[1] - 2.0)*(x[1] - 2.0)) + 2.0 / (1.0 + 1.0 / 4.0*(x[0] - 2.0)*(x[0] - 2.0) + (x[1] - 2.0)*(x[1] - 2.0)));
+}
+
+void SearchInterval(double &ai, double &bi, class vect x0, class vect s)
+{
+	double h;
+	double lambda, lambda0 = 0.0;
+	double delta = 1.0e-8;
+	bool flag = true;
+
+	if (func(x0 + s * lambda0) > func(x0 + s * (lambda0 + delta)))
+	{
+		h = delta;
+		lambda = lambda0 + delta;
+	}
+	else
+	{
+		lambda = lambda0 - delta;
+		h = -delta;
+	}
+
+	lambda0 = lambda;
+	double func1 = func(x0 + s * lambda0);
+	double func2;
+	while (flag)
+	{
+		h *= 2;
+		lambda = lambda0 + h;
+		func2 = func(x0 + s * lambda);
+		if (func1 > func2)
+		{
+			lambda0 = lambda;
+			func1 = func2;
+		}
+		else
+			flag = false;
+	}
+	if (h >= 0)
+	{
+		ai = lambda0 - h / 2;
+		bi = lambda;
+	}
+	else
+	{
+		bi = lambda0 - h / 2;
+		ai = lambda;
+	}
+}
+
+double Fibonacci(class vect x0, class vect s)
+{
+	double ai, bi;
+	double Fn = 0;
+	vect x = x0;
+	int n;
+
+	SearchInterval(ai, bi, x0, s);
+
+	double length = abs(bi - ai);
+	vector <double> F;
+	F.push_back(1); F.push_back(1);
+
+	for (n = 2; length / eps > Fn; n++)
+	{
+		Fn = F[n - 1] + F[n - 2];
+		F.push_back(Fn);
+	}
+
+	n = F.size() - 3;
+
+	double lambda1 = ai + F[n] * (bi - ai) / F[n + 2];
+	double lambda2 = ai + F[n + 1] * (bi - ai) / F[n + 2];
+
+	double func1 = func(x + s * lambda1);
+	double func2 = func(x + s * lambda2);
+
+	for (int i = 1; i < n; i++)
+	{
+		if (func1 <= func2)
+		{
+			bi = lambda2; lambda2 = lambda1;
+			lambda1 = ai + F[n - i + 1] * (bi - ai) / F[n - i + 3];
+			func2 = func1;
+			func1 = func(x + s * lambda1);
+		}
+		else
+		{
+			ai = lambda1; lambda1 = lambda2;
+			lambda2 = ai + F[n - i + 2] * (bi - ai) / F[n - i + 3];
+			func1 = func2;
+			func2 = func(x + s * lambda2);
+		}
+		length = bi - ai;
+	}
+	lambda2 = lambda1 + eps;
+	if (func1 <= func(x + s * lambda2))
+		bi = lambda1;
+	else
+		ai = lambda1;
+	return (ai + bi) / 2.0;
+}
+
+
+bool allow_stop(class vect x1, class vect x)
+{
+	vect d = x1 - x;
+	if (d.norm() <= eps)
+		return true;
+	else
+	return false;
+}
+
+void main()
+{
+	FILE *fo = fopen("rez.txt", "w");
+	class vect x, x1, x2, x3, xold, s[2], a[2], b;
+	double lambda1, lambda2, lambda3;
+	int iter = 0;
+	x[0] = x_0;
+	x[1] = y_0;
+	// Начальные ортогональные направления (стандартный базис)
+	s[0][0] = s[1][1] = 1.0;
+	s[0][1] = s[1][0] = 0.0;
+	// Сам метод (стандартный)
+	while (!iter || !allow_stop(x, xold))
+	{
+		xold = x;
+		lambda1 = Fibonacci(x, s[0]);
+		x1 = x + s[0] * lambda1;
+		lambda2 = Fibonacci(x1, s[1]);
+		x2 = x1 + s[1] * lambda2;
+		lambda3 = Fibonacci(x2, s[0]);
+		x3 = x2 + s[0] * lambda3;
+
+		// Построение новых ортогональных направлений
+		s[0] = s[1];
+		s[1] = x3 - x1;
+
+		lambda2 = Fibonacci(x3, s[1]);
+		x = x3 + s[1] * lambda2;
+
+		iter++;
+		cout << actions << '\t' << iter << '\t' << x << '\t' << func(x) << endl;
+		fprintf(fo, "%d\t%d\t%.15f\t%.15f\t%.15f\n", actions, iter, x[0], x[1], func(x));
+	}
+	cout << actions << '\t' << iter << '\t' << x << '\t' << func(x) << endl;
+	fprintf(fo, "%d\t%d\t%e\t%e\t%e\n", actions, iter, x[0], x[1], func(x));
+	system("pause");
+}
