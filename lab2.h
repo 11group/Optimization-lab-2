@@ -7,8 +7,9 @@
 ////	содержащего минимум функции ////////
 ////////////////////////////////////////////
 
-// UPD: добавлен метод Хукса и Дживса
-
+// UPD0: добавлен метод Хукса и Дживса
+// UPD1: в процессе разработки методы наискорейшего спуска и Флэтчера-Ривза
+// UPD2: Хукса и Дживса надо переделывать
 
 #define _CRT_SECURE_NO_WARNINGS
 #pragma once
@@ -21,7 +22,7 @@
 #include <iomanip>
 #include <fstream>
 
-namespace optimization
+namespace lab1
 {
 	class Dihotomia
 	{
@@ -75,7 +76,10 @@ namespace optimization
 		double func(double x);
 		void Alg();
 	};
+}
 
+namespace lab2
+{
 	class HuckJivs
 	{
 	protected:
@@ -96,10 +100,13 @@ namespace optimization
 	{
 	protected:
 		double x1, x2, x0, f1, f2, f0;
+		double S0, S1, S2;
 		double eps = 1e-3;
 		int AmountFletcherRivs = 0;
 		double func(double x);
-		
+		double Derivative = 0;
+		bool flag1 = 0;
+
 	public:
 		FletcherRivs() {};
 		~FletcherRivs() {};
@@ -113,12 +120,13 @@ namespace optimization
 		double eps = 1e-3;
 		int AmountSteepestDescent = 0;
 		double func(double x);
+		double Derivative = 0;
 
 	public:
 		SteepestDescent() {};
 		~SteepestDescent() {};
 		void SteepestDescentRun();
-	
+
 	};
 
 }
