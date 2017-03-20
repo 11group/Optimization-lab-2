@@ -1,5 +1,5 @@
 #include "lib.h"
-namespace optimization
+namespace lab1
 {
 
 	///////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ namespace optimization
 		f2 = func(x2);
 
 		//Ищем минимум 
-		for (i = 1; i<n; i++)
+		for (i = 1; i < n; i++)
 		{
 			if (f1 <= f2)
 			{
@@ -234,7 +234,10 @@ namespace optimization
 		fclose(out);
 		_getch();
 	}
+}
 
+namespace lab2
+{
 
 	///////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////
@@ -282,16 +285,15 @@ namespace optimization
 	{
 		int i;
 		setlocale(LC_ALL, "Russian");
-		//FILE *out = fopen("outputHuck&Jivs.txt", "w");
 		std::ofstream out;
 		out.open("outputHuck&Jivs.txt");
 		std::cout << "Введите начальную точку: ";
 		std::cin >> x0;
 
 		std::cout << "\n" << "Точка отправления   " << "Значение функции\n";
-		std::cout << std::setprecision(15) << x0 << "               " ;
+		std::cout << std::setprecision(15) << x0 << "               ";
 		out << "\n" << "Точка отправления   " << "Значение функции\n"
-		<< std::setprecision(15) << x0 << "               ";
+			<< std::setprecision(15) << x0 << "               ";
 
 		// найдем направление движения
 		SurroundingArea(&x0);
@@ -327,11 +329,43 @@ namespace optimization
 	double FletcherRivs::func(double x)
 	{
 		AmountFletcherRivs++;
+#pragma region x^2
+		Derivative = 2 * x;
 		return x*x;
+#pragma endregion
+
+
 	}
 
 	void FletcherRivs::FletcherRivsRun()
 	{
+		int i;
+		setlocale(LC_ALL, "Russian");
+		std::ofstream out;
+		out.open("outputFletcher&Rivs.txt");
+		std::cout << "Введите начальную точку: ";
+		std::cin >> x0;
+
+		S0 = 0;
+		S1 = 0;
+		f0 = func(x0);
+		S2 = -Derivative;
+		for (i = 1; flag1 == 0; i++)
+		{
+			f1 = x0 + i*S2;
+			if (f1 < f0)
+				flag1 = 1;
+			else
+			{
+				f0 = f1;
+				x0 = x0 + i*S2;
+				S0 = S1;
+				S1 = S2;
+
+			}
+
+		}
+
 	}
 
 	///////////////////////////////////////////////////////
@@ -343,7 +377,11 @@ namespace optimization
 	double SteepestDescent::func(double x)
 	{
 		AmountSteepestDescent++;
+#pragma region x^2
+		Derivative = 2 * x;
 		return x*x;
+#pragma endregion
+		
 	}
 
 	void SteepestDescent::SteepestDescentRun()
